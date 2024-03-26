@@ -13,5 +13,12 @@ int main()
     person p2("Jane", 25);
     p2.print();
 
+    int *i = new int;
+    *i = 0;
+    int &j = *i;
+    j++;
+
+    std::cout << j << " " << &j << std::endl;
+
     return 0;
 }
