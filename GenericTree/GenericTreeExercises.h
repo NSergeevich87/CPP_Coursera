@@ -86,7 +86,6 @@
 // properly destroyed first. There is no need to return a value because the
 // tree is edited in-place by reference.
 static void treeFactory(GenericTree<int>& tree) {
-
   //      *****************************************************
   //                           EXERCISE 1
   //    TODO: Your work here! You should edit this function body!
@@ -96,8 +95,17 @@ static void treeFactory(GenericTree<int>& tree) {
   // Build the contents of tree so that it matches the diagram above
   // when you print it out. The main() function runs that test for you.
 
-  // ...
+  // If the tree passed in already has some contents then they should be properly destroyed first.
+  tree.deleteSubtree(tree.getRootPtr());
 
+  // We can start by adding the root node with the value 4.
+  auto rootNode = tree.createRoot(4);
+
+  // Now we can add the children of the root node, and their children, and so on.
+  // We can use the addChild method of the TreeNode class to add children to a node.
+  rootNode->addChild(8)->addChild(16)->addChild(42);
+  rootNode->childrenPtrs[0]->addChild(23);
+  rootNode->addChild(15);
 }
 
 // treeFactoryTest: This function demonstrates the execution of treeFactory
@@ -313,7 +321,7 @@ std::vector<T> traverseLevels(GenericTree<T>& tree) {
 
   auto rootNodePtr = tree.getRootPtr();
   if (!rootNodePtr) return results;
-
+  
   //      *****************************************************
   //                           EXERCISE 2
   //    TODO: Your work here! You should edit this function body!
@@ -325,6 +333,31 @@ std::vector<T> traverseLevels(GenericTree<T>& tree) {
   // with the .push_back() member function.
 
   // ...
+
+  // We can use a queue to help us traverse the tree in level order.
+  std::queue<TreeNode*> nodesToVisit;
+
+  // Start by adding the root node to the queue.
+  nodesToVisit.push(rootNodePtr);
+
+  // Loop while there are still nodes to visit.
+  while (!nodesToVisit.empty()) {
+
+    // Get a copy of the front node pointer from the queue.
+    TreeNode* frontNode = nodesToVisit.front();
+    nodesToVisit.pop();
+
+    // If the front node is null, we should skip it.
+    if (!frontNode) continue;
+
+    // Add the data of the front node to the results vector.
+    results.push_back(frontNode->data);
+
+    // Now we can add the children of the front node to the queue.
+    for (auto childPtr : frontNode->childrenPtrs) {
+      nodesToVisit.push(childPtr);
+    }
+  }
 
   return results;
 }
