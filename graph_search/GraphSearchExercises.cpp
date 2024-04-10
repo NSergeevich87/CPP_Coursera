@@ -49,20 +49,14 @@
 int GridGraph::countEdges() const {
   int numEdges = 0;
 
-  // =======================================================================
-  // TODO: Your code here!
-  // =======================================================================
-  for (const auto& [point, neighbors] : adjacencyMap) {
-    numEdges += neighbors.size();
+  for (const auto& pair : adjacencyMap) {
+    // For each point in the adjacency map, we can add the size of its
+    // NeighborSet to the total number of edges. This will double-count
+    // the edges, but that's okay because we'll divide by 2 at the end.
+    numEdges += pair.second.size();
   }
-  // The above loop is a simple way to count the number of edges by adding
-  // up the sizes of the NeighborSet sets in adjacencyMap. However, this
-  // will double-count the edges, because the graph is undirected. So we
-  // need to divide the total by 2 to get the correct answer. (This is
-  // because for any edge (A,B), we will count it once when we look at A,
-  // and once when we look at B. So we count each edge twice.)
+
   numEdges /= 2;
-  
 
   return numEdges;
 }
@@ -100,18 +94,16 @@ void GridGraph::removePoint(const IntPair& p1) {
 
   const GridGraph::NeighborSet originalNeighbors = adjacencyMap.at(p1);
 
-  // =======================================================================
-  // TODO: Your code here!
-  // =======================================================================
+  // We'll loop over the original neighbors and remove the edge between them
+  // and p1. This will remove the reference to p1 from the neighbor's set.
+  for (const auto& p2 : originalNeighbors) {
+    removeEdge(p1, p2);
+  }
+  
+  // Finally, we can remove the point p1 from the adjacency map entirely.
+  adjacencyMap.erase(p1);
 
-  // Finally, for the one point we are removing, erase the point key itself
-  // from adjacencyMap directly. (There is no other GridGraph helper function
-  // for this, because that's what we're implementing right now! We need to
-  // use adjacencyMap's own erase function directly to erase the key.)
-
-  // =======================================================================
-  // TODO: Your code here!
-  // =======================================================================
+  
 }
 
 // =========================================================================
@@ -306,21 +298,23 @@ std::list<IntPair> graphBFS(const IntPair& start, const IntPair& goal, const Gri
     // TODO: Your code here!
     // We'll need to loop over the neighbors that are the points adjacent to curPoint.
     // Get a copy of the set of neighbors we're going to loop over.
-    GridGraph::NeighborSet neighbors; // Change this...
+    GridGraph::NeighborSet neighbors = graph.adjacencyMap.at(curPoint);
     // =====================================================================
 
     for (auto neighbor : neighbors) {
-
+      //bool neighborWasAlreadyVisited;
       // ==================================================================
       // TODO: Your code here!
       // Check whether the neighbor has already been visited.
-      bool neighborWasAlreadyVisited = false; // Change this...
+      if (visitedSet.count(neighbor)) {
+        continue;
+      }
       // ==================================================================
 
       // If this adjacent vertex has NOT been visited before, we will visit it now.
       // If it HAS been visited before, we do nothing and continue to loop.
       // This way, we avoid enqueueing the same vertex more than once.
-      if (!neighborWasAlreadyVisited) {
+      if (!visitedSet.count(neighbor)) {
 
         // ================================================================
         // TODO: Your code here!
@@ -328,13 +322,11 @@ std::list<IntPair> graphBFS(const IntPair& start, const IntPair& goal, const Gri
         // Record that the curPoint is the predecessor of the neighbor point,
         // since curPoint has just led to the discovery of this neighbor for
         // the first time.
-        // ...
-
+        pred[neighbor] = curPoint;
         // Add neighbor to the visited set.
-        // ...
-
+        visitedSet.insert(neighbor);
         // Push neighbor into the exploration queue.
-        // ...
+        exploreQ.push(neighbor);
 
         // ================================================================
 
@@ -522,7 +514,7 @@ std::list<PuzzleState> puzzleBFS(const PuzzleState& start, const PuzzleState& go
     // We'll need to loop over the neighbors that are the points adjacent to curState.
     // We need a collection of neighbors we're going to loop over.
     
-    auto neighbors = {start}; // Change this! This line is totally wrong.
+    auto neighbors = curState.getAdjacentStates();
 
     // Hint: Look at PuzzleState.h
     // =====================================================================
@@ -532,10 +524,12 @@ std::list<PuzzleState> puzzleBFS(const PuzzleState& start, const PuzzleState& go
       // ==================================================================
       // TODO: Your code here!
       // Check whether the neighbor has already been visited.
-      bool neighborWasAlreadyVisited = false; // Change this...
+      if (visitedSet.count(neighbor)) {
+        continue;
+      }
       // ==================================================================
 
-      if (!neighborWasAlreadyVisited) {
+      if (!visitedSet.count(neighbor)) {
 
         // ================================================================
         // TODO: Your code here!
@@ -543,13 +537,13 @@ std::list<PuzzleState> puzzleBFS(const PuzzleState& start, const PuzzleState& go
         // Record that the curState is the predecessor of the neighbor point,
         // since curState has just led to the discovery of this neighbor for
         // the first time.
-        // ...
+        pred[neighbor] = curState;
 
         // Add neighbor to the visited set.
-        // ...
+        visitedSet.insert(neighbor);
 
         // Push neighbor into the exploration queue.
-        // ...
+        exploreQ.push(neighbor);
 
         // ================================================================
 
